@@ -26,8 +26,8 @@ function [ output, predictorMat ] = detectSWDs_automated(edffilespec, eventClass
     %
     % example:
     %
-    % edffilespec = strcat(cookieMonster, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/EDFs/Ronde_4.edf');
-    % eventClassifier_filespec = strcat(cookieMonster, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/SWDClassificationData/eventClassifier_RQSWDs.mat');
+    % edffilespec = strcat(labDataDrive, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/EDFs/Ronde_4.edf');
+    % eventClassifier_filespec = strcat(labDataDrive, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/SWDClassificationData/eventClassifier_RQSWDs.mat');
     % fs = 256;
     % channel = 2;
     % detectSWDs_automated(edffilespec, eventClassifier_filespec, fs, channel);
@@ -196,9 +196,9 @@ function [ output, predictorMat ] = detectSWDs_automated(edffilespec, eventClass
                     % export SWDFile
                     [a, b] = fileparts(edffilespec);
                     if exist('output', 'var')
-                        save(char(strcat(a, filesep, b, '_exactSeizureLocations.mat')), 'output');
+                        save(char(strcat(labDataDrive, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/detectSWD_output/', b, '_exactSeizureLocations.mat')), 'output');
                     end
-                    save(char(strcat(a, filesep, b, '_predictorMatrix.mat')), 'predictorMat');
+                    save(char(strcat(labDataDrive, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/detectSWD_output/', b, '_predictorMatrix.mat')), 'predictorMat');
                     close all
 
                 end

@@ -1,0 +1,1 @@
+Eventually data and namefiles for this code will be included. For now, please contact the author (Jesse Pfammatter @ jesse.pfammatter@gmail.com) for access to the data in the following folder:'/Users/jesse/private/jonesLab_data/sleep_and_seizures/EEG_data/RQ'

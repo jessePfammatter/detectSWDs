@@ -61,13 +61,13 @@ function [ featureSet ] = generatePredictorsForEventClassifier( eventsObject, fs
         inBetween_mean(i) = mean(eventsObject(i).inBetween(eventStart(i):eventStop(i)));
         inBetween_std(i) = std(eventsObject(i).inBetween(eventStart(i):eventStop(i)));
         inBetween_max(i) = max(eventsObject(i).inBetween(eventStart(i):eventStop(i)));
-
+        
         % calculate the harmonic  variables
         eventsObject(i).harmonic = sum(abs(eventsObject(i).cwtMortOut(floor(fs/12.8):floor(fs/8.83),:))); %15-32 hrz approx
         harmonic_mean(i) = mean(eventsObject(i).harmonic(eventStart(i):eventStop(i)));
         harmonic_std(i) = std(eventsObject(i).harmonic(eventStart(i):eventStop(i)));
         harmonic_max(i) = max(eventsObject(i).harmonic(eventStart(i):eventStop(i)));
-
+        
         % higherFreq variables
         eventsObject(i).higherFreq = sum(abs(eventsObject(i).cwtMortOut(floor(fs/25.6):floor(fs/13.47),:))); 
         higherFreq_mean(i) = mean(eventsObject(i).higherFreq(eventStart(i):eventStop(i)));
@@ -79,6 +79,6 @@ function [ featureSet ] = generatePredictorsForEventClassifier( eventsObject, fs
 
     % redistribute to the featureSet object
     featureSet = table(sixHz_mean', sixHz_std', sixHz_max', inBetween_mean', inBetween_std', inBetween_max', harmonic_mean',  harmonic_std', harmonic_max', higherFreq_mean', higherFreq_std', higherFreq_max');
-    featureSet.Properties.VariableNames = {'sixHz_mean', 'sixHz_std', 'sixHz_max', 'inBetween_mean', 'inBetween_std', 'inBetween_max', 'harmonic_mean',  'harmonic_std', 'harmonic_max', 'higherFreq_mean', 'higherFreq_std', 'higherFreq_max'};
+    featureSet.Properties.VariableNames = {'sixHz_mean', 'sixHz_std', 'sixHz_max', 'inBetween_mean', 'inBetween_std', 'inBetween_max', 'harmonic_mean', 'harmonic_std', 'harmonic_max',  'higherFreq_mean', 'higherFreq_std', 'higherFreq_max'};
 
 end
