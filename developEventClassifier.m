@@ -1,9 +1,9 @@
 
 % ----- import the namefile and load the aggregated data
 
-namefilespec = strcat(labDataDrive, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/sleep_and_seizures_RQ_namefile.txt');
+namefilespec = strcat(labDataDrive, '/gamma2R43Q/sleep_and_seizures_RQ_namefile.txt');
 F = ParseNameFile(namefilespec); % makes the object 'F'
-savePath = strcat(labDataDrive, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/seizureScoring/SWDtest3/');
+savePath = strcat(labDataDrive, '/gamma2R43Q/seizureScoring/SWDtest3/');
 load(strcat(savePath, 'SWDDATA_07_27_17_normalized.mat')); 
 
 % ----- generate event specific predictors and assemble PCA matrix including all variables, even ones that don't calculate properly if no peaks are found -- those we will have to drop from the analysis
@@ -242,11 +242,14 @@ for i = 1:size(data, 2)
 end
 
 % assess quality of fit... and in relation to other scoreres
-labelslist = {'S1', 'S2', 'S3', 'S4', 'ML', 'HC', 'CC'};
+labelslist = {'S1', 'S2', 'S3', 'S4', 'KM', 'ML', 'HC', 'CC'};
 
 % add kmeans labels
 labelsKM = kmeans(table2array(fullMat), 2);
 labelsKM = labelsKM';
+
+labelsKM = labelsKM + 1;
+labelsKM(labelsKM == 3) = 1;
 
 % build the table variables
 fullLength = length(labelsS1);
@@ -301,9 +304,103 @@ display(strcat({'Average Agreement Between ML and Humans: '}, num2str(averageML_
 
 % calculate the sensitivity (true positive rate) -- should be based on the HC data
 matrixmatrix = confusionmat(labelsHC, labelsML);
+%%
+nEventsInHC = sum(sum(matrixmatrix(2:end, 2:end)));
+specificity = matrixmatrix(2, 2) / sum(labelsHC == 1)
+
+sensitivity = matrixmatrix(3, 3) / sum(labelsHC == 2)
+precision =  matrixmatrix(3, 3) / (matrixmatrix(3, 3) + matrixmatrix(2, 3) )
+
+
+confmat_s1_ml = confusionmat(labelsS1, labelsML)
+confmat_s2_ml = confusionmat(labelsS2, labelsML)
+confmat_s3_ml = confusionmat(labelsS3, labelsML)
+confmat_s4_ml = confusionmat(labelsS4, labelsML)
+
+matrixmatrix = confusionmat(labelsKM, labelsHC)
 nEventsInHC = sum(sum(matrixmatrix(2:end, 2:end)));
 specificity = matrixmatrix(2, 2) / sum(labelsHC == 1);
 sensitivity = matrixmatrix(3, 3) / sum(labelsHC == 2);
+
+
+%% single measures of precision, recall, etc.
+
+precision_s1_ML = confmat_s1_ml(2,2) / (confmat_s1_ml(2,2) + confmat_s1_ml(2,3))
+precision_s2_ML = confmat_s2_ml(2,2) / (confmat_s2_ml(2,2) + confmat_s2_ml(2,3))
+precision_s3_ML = confmat_s3_ml(1,1) / (confmat_s3_ml(1,1) + confmat_s3_ml(1,2))
+precision_s4_ML = confmat_s4_ml(1,1) / (confmat_s4_ml(1,1) + confmat_s4_ml(1,2))
+
+recall_s1_ML = confmat_s1_ml(2,2) / (confmat_s1_ml(2,2) + confmat_s1_ml(3,2))
+recall_s2_ML = confmat_s2_ml(2,2) / (confmat_s2_ml(2,2) + confmat_s2_ml(3,2))
+recall_s3_ML = confmat_s3_ml(1,1) / (confmat_s3_ml(1,1) + confmat_s3_ml(2,1))
+recall_s4_ML = confmat_s4_ml(1,1) / (confmat_s4_ml(1,1) + confmat_s4_ml(2,1))
+
+%% build my own precision recall curves because perfcurv does not work right.
+
+thresholds = min(classificationScore):0.01:max(classificationScore);
+
+for i = 1:length(thresholds)
+   templabels = classificationScore < thresholds(i);
+   templabels = templabels + 1;
+   
+   confmat_s1_ml = confusionmat(labelsS1, templabels);
+   confmat_s2_ml = confusionmat(labelsS2, templabels);
+   confmat_s3_ml = confusionmat(labelsS3, templabels);
+   confmat_s4_ml = confusionmat(labelsS4, templabels);
+
+   precision_s1_ML(i) = confmat_s1_ml(2,2) / (confmat_s1_ml(2,2) + confmat_s1_ml(2,3));
+   precision_s2_ML(i) = confmat_s2_ml(2,2) / (confmat_s2_ml(2,2) + confmat_s2_ml(2,3));
+   precision_s3_ML(i) = confmat_s3_ml(1,1) / (confmat_s3_ml(1,1) + confmat_s3_ml(1,2));
+   precision_s4_ML(i) = confmat_s4_ml(1,1) / (confmat_s4_ml(1,1) + confmat_s4_ml(1,2));
+
+   recall_s1_ML(i) = confmat_s1_ml(2,2) / (confmat_s1_ml(2,2) + confmat_s1_ml(3,2));
+   recall_s2_ML(i) = confmat_s2_ml(2,2) / (confmat_s2_ml(2,2) + confmat_s2_ml(3,2));
+   recall_s3_ML(i) = confmat_s3_ml(1,1) / (confmat_s3_ml(1,1) + confmat_s3_ml(2,1));
+   recall_s4_ML(i) = confmat_s4_ml(1,1) / (confmat_s4_ml(1,1) + confmat_s4_ml(2,1));
+   
+   
+end
+
+figure('units', 'inch', 'pos', [3 10 7 7]);
+
+
+plot(recall_s1_ML, precision_s1_ML, 'r', 'linewidth', 2)
+hold on
+plot(recall_s2_ML, precision_s2_ML, 'b', 'linewidth', 2)
+plot(recall_s3_ML, precision_s3_ML, 'k', 'linewidth', 2)
+plot(recall_s4_ML, precision_s4_ML, 'g', 'linewidth', 2)
+
+xlabel('Recall')
+ylabel('Precision')
+
+legend('S1', 'S2', 'S3', 'S4')
+
+print('~/Desktop/precision_recall_curve_machineScore_vs_Humans.pdf', '-dpdf');
+
+
+
+%% ROC curve
+
+figure('units', 'inch', 'pos', [3 10 7 7]);
+
+[X Y] = perfcurve(labelsS1, classificationScore, '2')
+plot(Y, X, 'r', 'linewidth', 2)
+hold on
+[X Y] = perfcurve(labelsS2, classificationScore, '2')
+plot(Y, X, 'b', 'linewidth', 2)
+[X Y] = perfcurve(labelsS3, classificationScore, '2')
+plot(Y, X, 'k', 'linewidth', 2)
+[X Y] = perfcurve(labelsS4, classificationScore, '2')
+plot(Y, X, 'g', 'linewidth', 2)
+legend('S1', 'S2', 'S3', 'S4')
+
+
+ylabel('True Positive Rate')
+xlabel('False Positive Rate')
+
+print('~/Desktop/ROC_curve_machineScore_vs_Humans.pdf', '-dpdf');
+
+
 
 %% lasso stuff after we generated the labels to see which predictors were important.
 
@@ -387,10 +484,10 @@ for i = 1:size(dataSame, 2)
 end
 
 % SAVE THE CLASSIFIER MANUALLY IF ITS GOOD
-eventClassifier_filespec = strcat(labDataDrive, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/detectSWD_output/eventClassifier_RQSWDs.mat');
+eventClassifier_filespec = strcat(labDataDrive, '/gamma2R43Q/detectSWD_output/eventClassifier_RQSWDs.mat');
 save(eventClassifier_filespec, 'trainedClassifier')
 
-eventClassifier_filespec =  strcat(labDataDrive, '/jonesLab_data/sleep_and_seizures/EEG_data/RQ/detectSWD_output/eventClassifier_RQSWDs_trainingMat.mat');
+eventClassifier_filespec =  strcat(labDataDrive, '/gamma2R43Q/detectSWD_output/eventClassifier_RQSWDs_trainingMat.mat');
 save(eventClassifier_filespec, 'fullMat')
 
 % PLOTS PLOTS PLOTS PLOTS PLOTS
@@ -1319,10 +1416,10 @@ subplot(6, 12, [53:56, 65:68])
 
 % scorer 3
 subplot(6, 12, [57:60, 69:72])
-    scatter(table2array(fullMat(labelsS3 ==1,variableA)), table2array(fullMat(labelsS3 == 1,variableC)), 10, colors(1,:), 'filled', 'MarkerFaceAlpha',.5,'MarkerEdgeAlpha',.25)
+    scatter(table2array(fullMat(labelsS4 ==1,variableA)), table2array(fullMat(labelsS4 == 1,variableC)), 10, colors(1,:), 'filled', 'MarkerFaceAlpha',.5,'MarkerEdgeAlpha',.25)
     set(gca, 'fontsize', 15)
     hold on
-    scatter(table2array(fullMat(labelsS3 ==2,variableA)), table2array(fullMat(labelsS3 == 2,variableC)), 10, colors(end,:), 'filled', 'MarkerFaceAlpha',.5,'MarkerEdgeAlpha',.25)
+    scatter(table2array(fullMat(labelsS4 ==2,variableA)), table2array(fullMat(labelsS4 == 2,variableC)), 10, colors(end,:), 'filled', 'MarkerFaceAlpha',.5,'MarkerEdgeAlpha',.25)
     set(gcf, 'PaperSize', [20 20]) 
     print(gcf, '~/Desktop/Figure_2.pdf', '-dpdf', '-r300')
 
