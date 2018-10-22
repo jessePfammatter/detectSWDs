@@ -1,11 +1,15 @@
-README for ‘SWD_detection’ (SWD = spike and wave discharge) set of scripts. (updated 04/24/18)
+README for ‘detectSWD’ (SWD = spike and wave discharge) set of scripts. (updated 08/22/18)
 
-This is a first version of the code and README file that was submitted along with manuscript submission of the SWD detection paper to eNeuro. 
-This folder contains scripts needed for fully automated SWD detection. The scripts included here require a data set that can be acquired either in the GIT repository or by contacting jesse.pfammatter@gmail.com
+This repository is associated with the manuscript, 'An automated, machine learning-based detection algorithm for spike-wave discharges (SWDs) in a mouse model of absence epilepsy' which can be found at https://doi.org/10.1101/309146. For questions please contact Jesse Pfammatter at jesse.pfammatter@gmail.com or pfammatter@wisc.edu
 
-% ----- How to proceed. (Still under construction).
+% ----- Demo Materials ----- %
 
-1. Obtain EEG files containing at least 2 (we've gotten it to work well with 4) channels of EEG.
+% ----- Training a Model ----- %
+
+
+1. A demo
+
+1. Obtain EEG from mouse
 2. Get some files tagged (4 second epochs) for SWDs in Svarog or Serenia Sleep Pro to help train the model.
 3. open the developSWDClassifier.m script and modify it to include the files that you have tagged for SWDs. Use this script to build a Support Vector Machine (SVM) model that can identify SWDs in a new set of files. There are some test features built into the script that will allow you to see the number of true positives, false positives, etc. When developing a model, shoot for the smallest number of false negatives as the automated portion of the script will go through and finish the job and properly reduce the false positives (also, there might be more SWD activity than you think). An initial model that missed a lot of true positives will not be able to find them during the exact detection phase (as it only looks at epochs flagged by the SVM).
 
